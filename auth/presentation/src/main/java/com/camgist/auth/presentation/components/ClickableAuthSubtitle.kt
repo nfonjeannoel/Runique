@@ -25,7 +25,7 @@ fun ClickableAuthSubtitle(
         withStyle(
             style = SpanStyle(
                 fontFamily = Poppins,
-                color = RuniqueGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         ) {
             append(stringResource(id = nonClickableTextResId) + " ")
@@ -48,7 +48,7 @@ fun ClickableAuthSubtitle(
                         fontFamily = Poppins
                     )
                 ) {
-                    append(stringResource(id = R.string.login))
+                    append(stringResource(id = clickableTextResId))
                 }
             }
         }
