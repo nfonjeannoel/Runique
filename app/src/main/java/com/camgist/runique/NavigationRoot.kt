@@ -11,6 +11,8 @@ import androidx.navigation.navigation
 import com.camgist.auth.presentation.intro.IntroScreenRoot
 import com.camgist.auth.presentation.login.LoginScreenRoot
 import com.camgist.auth.presentation.register.RegisterScreenRoot
+import com.camgist.run.presentation.active_run.ActiveRunScreenRoot
+import com.camgist.run.presentation.run_overview.RunOverviewScreenRoot
 
 @Composable
 fun NavigationRoot(
@@ -90,12 +92,15 @@ private fun NavGraphBuilder.runGraph(navController: NavHostController) {
         route = "run"
     ) {
         composable(route = "run_overview") {
-            Text("Run Overview")
-            // RunOverviewScreen()
+             RunOverviewScreenRoot(
+                 onStartRunClick = {
+                     navController.navigate("active_run")
+                 }
+             )
         }
 
-        composable(route = "run_details") {
-            // RunDetailsScreen()
+        composable(route = "active_run") {
+            ActiveRunScreenRoot()
         }
     }
 }

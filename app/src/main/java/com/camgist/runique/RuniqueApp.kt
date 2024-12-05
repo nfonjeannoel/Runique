@@ -4,6 +4,7 @@ import android.app.Application
 import com.camgist.auth.data.di.authDataModule
 import com.camgist.auth.presentation.di.authViewModelModule
 import com.camgist.core.data.di.coreDataModule
+import com.camgist.run.presentation.di.runViewModelModule
 import com.camgist.runique.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -24,7 +25,8 @@ class RuniqueApp : Application() {
                 authDataModule,
                 authViewModelModule,
                 appModule,
-                coreDataModule
+                coreDataModule,
+                runViewModelModule
             )
         }
     }
