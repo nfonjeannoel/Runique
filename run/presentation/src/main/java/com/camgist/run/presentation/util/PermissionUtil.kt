@@ -8,12 +8,12 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 
 fun ComponentActivity.shouldShowLocationPermissionRationale(): Boolean {
-    return shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    return shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)
 }
 
 
 fun ComponentActivity.shouldShowNotificationPermissionRationale(): Boolean {
-    return Build.VERSION.SDK_INT >= 33 && shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)
+    return Build.VERSION.SDK_INT >= 33 && shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
 }
 
 private fun Context.hasPermission(permission: String): Boolean {
