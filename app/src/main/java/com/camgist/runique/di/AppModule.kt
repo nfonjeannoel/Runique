@@ -7,6 +7,8 @@ import com.camgist.auth.data.EmailPatternValidator
 import com.camgist.auth.domain.PatternValidator
 import com.camgist.auth.domain.UserDataValidator
 import com.camgist.runique.MainViewModel
+import com.camgist.runique.RuniqueApp
+import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.singleOf
@@ -21,6 +23,10 @@ val appModule = module {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
+
+    single<CoroutineScope>{
+        (androidApplication() as RuniqueApp).applicationScope
     }
 
     viewModelOf(::MainViewModel)

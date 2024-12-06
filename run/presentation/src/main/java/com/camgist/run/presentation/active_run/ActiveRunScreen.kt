@@ -33,6 +33,7 @@ import com.camgist.presentation.designsystem.components.RuniqueScaffold
 import com.camgist.presentation.designsystem.components.RuniqueToolbar
 import com.camgist.run.presentation.R
 import com.camgist.run.presentation.active_run.components.RunDataCard
+import com.camgist.run.presentation.active_run.maps.TrackerMap
 import com.camgist.run.presentation.util.hasLocationPermission
 import com.camgist.run.presentation.util.hasNotificationPermission
 import com.camgist.run.presentation.util.shouldShowLocationPermissionRationale
@@ -144,6 +145,13 @@ private fun ActiveRunScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            TrackerMap(
+                isRunFinished = state.isRunFinished,
+                currentLocation = state.currentLocation,
+                locations = state.runData.locations,
+                onSnapshot = {},
+                modifier = Modifier.fillMaxSize()
+            )
             RunDataCard(
                 elapsedTime = state.elapsedTime,
                 runData = state.runData,
@@ -158,21 +166,23 @@ private fun ActiveRunScreen(
     if (state.showLocationRationale || state.showNotificationRationale) {
         RuniqueDialog(
             title = stringResource(R.string.permission_required),
-            onDismiss = { /* Normal dismissing not allowed for permission*/},
+            onDismiss = { /* Normal dismissing not allowed for permission*/ },
             description = when {
                 state.showLocationRationale && state.showNotificationRationale -> {
                     stringResource(R.string.location_notification_rationale)
                 }
+
                 state.showLocationRationale -> {
                     stringResource(R.string.location_rationale)
                 }
+
                 else -> {
                     stringResource(R.string.notification_rationale)
                 }
             },
             primaryButton = {
                 RuniqueOutlinedActionButton(
-                  text = stringResource(R.string.okay),
+                    text = stringResource(R.string.okay),
                     isLoading = false,
                     onClick = {
                         onAction(ActiveRunAction.DismissRationaleDialog)
@@ -186,7 +196,7 @@ private fun ActiveRunScreen(
 
 private fun ActivityResultLauncher<Array<String>>.requestRuniquePermissions(
     context: Context
-){
+) {
     val hasLocationPermission = context.hasLocationPermission()
     val hasNotificationPermission = context.hasNotificationPermission()
 
@@ -204,9 +214,11 @@ private fun ActivityResultLauncher<Array<String>>.requestRuniquePermissions(
         !hasLocationPermission && !hasNotificationPermission -> {
             launch(locationPermissions + notificationPermissions)
         }
+
         !hasLocationPermission -> {
             launch(locationPermissions)
         }
+
         !hasNotificationPermission -> {
             launch(notificationPermissions)
         }

@@ -90,7 +90,7 @@ private fun RunDataItem(
             fontSize = 12.sp
         )
         Text(
-            text = title,
+            text = value,
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = valueFontSize
         )

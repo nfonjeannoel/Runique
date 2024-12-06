@@ -3,43 +3,135 @@ package com.camgist.run.presentation.active_run
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.camgist.run.domain.RunningTracker
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 
-class ActiveRunViewModel: ViewModel() {
+class ActiveRunViewModel(
+    private val runningTracker: RunningTracker
+) : ViewModel() {
     var state by mutableStateOf(ActiveRunState())
         private set
 
     private val eventChannel = Channel<ActiveRunEvent>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _hasLocationPermission = MutableStateFlow(false)
+    private val shouldTrack = snapshotFlow { state.shouldTrack }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Lazily,
+            state.shouldTrack
+        )
 
-    fun onAction(action: ActiveRunAction){
-        when(action){
+
+    private val hasLocationPermission = MutableStateFlow(false)
+
+    private val isTracking = combine(
+        shouldTrack,
+        hasLocationPermission
+    ) { shouldTrack, hasPermission ->
+        shouldTrack && hasPermission
+    }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Lazily,
+            false
+        )
+
+    init {
+        hasLocationPermission.onEach { hasPermission ->
+            if (hasPermission) {
+                runningTracker.startObservingLocation()
+            } else {
+                runningTracker.stopObservingLocation()
+            }
+        }.launchIn(viewModelScope)
+
+        isTracking
+            .onEach { isTracking ->
+                if (isTracking) {
+                    runningTracker.setIsTracking(true)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        runningTracker
+            .currentLocation
+            .onEach {
+                state = state.copy(
+                    currentLocation = it?.location
+                )
+            }
+            .launchIn(viewModelScope)
+
+        runningTracker
+            .runData
+            .onEach {
+                state = state.copy(
+                    runData = it
+                )
+            }
+            .launchIn(viewModelScope)
+
+        runningTracker
+            .elapsedTime
+            .onEach {
+                state = state.copy(
+                    elapsedTime = it
+                )
+            }
+            .launchIn(viewModelScope)
+
+    }
+
+    fun onAction(action: ActiveRunAction) {
+        when (action) {
             ActiveRunAction.OnFinishRunClick -> {}
-            ActiveRunAction.OnResumeRunClick -> {}
-            ActiveRunAction.OnToggleRunClick -> {}
+            ActiveRunAction.OnResumeRunClick -> {
+                state = state.copy(
+                    shouldTrack = true
+                )
+            }
+            ActiveRunAction.OnToggleRunClick -> {
+                state = state.copy(
+                    shouldTrack = !state.shouldTrack,
+                    hasStartedRunning = true
+                )
+            }
             is ActiveRunAction.SubmitLocationPermissionInfo -> {
-                _hasLocationPermission.value = action.acceptedLocationPermission
+                hasLocationPermission.value = action.acceptedLocationPermission
                 state = state.copy(
                     showLocationRationale = action.showLocationPermissionRational
                 )
             }
+
             is ActiveRunAction.SubmitNotificationPermissionInfo -> {
                 state = state.copy(
                     showNotificationRationale = action.showNotificationPermissionRational
                 )
             }
+
             ActiveRunAction.DismissRationaleDialog -> {
                 state = state.copy(
                     showLocationRationale = false,
                     showNotificationRationale = false
                 )
             }
-            else -> Unit
+
+            ActiveRunAction.OnBackClick -> {
+                state = state.copy(
+                    shouldTrack = false
+                )
+            }
         }
     }
 }
